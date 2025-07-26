@@ -1,0 +1,176 @@
+version: '3.8'
+
+services:
+  # Infrastructure Services
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.0
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    volumes:
+      - zookeeper_data:/var/lib/zookeeper/data
+      - zookeeper_logs:/var/lib/zookeeper/log
+
+  kafka:
+    image: confluentinc/cp-kafka:7.4.0
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+    ports:
+      - "9092:9092"
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+
+  # Google ADK Agent Services
+  congestion-detector:
+    build:
+      context: .
+      dockerfile: congestion_detector/Dockerfile
+    depends_on:
+      - kafka
+      - redis
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - REDIS_URL=redis://redis:6379/0
+      - GOOGLE_API_KEY=AIzaSyChiIdeDZsYCVTXfUdpIj-KgbZdN8Cs2Dg
+      - GOOGLE_GENAI_USE_VERTEXAI=FALSE
+      - DEFAULT_MODEL=gemini-2.0-flash
+    volumes:
+      - ./sample_data:/app/sample_data
+    restart: unless-stopped
+    command: ["adk", "run", "congestion_detector"]
+
+  context-aggregator:
+    build:
+      context: .
+      dockerfile: context_aggregator/Dockerfile
+    depends_on:
+      - kafka
+      - redis
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - REDIS_URL=redis://redis:6379/0
+      - GOOGLE_API_KEY=AIzaSyChiIdeDZsYCVTXfUdpIj-KgbZdN8Cs2Dg
+      - GOOGLE_GENAI_USE_VERTEXAI=FALSE
+      - DEFAULT_MODEL=gemini-2.0-flash
+    restart: unless-stopped
+    command: ["adk", "run", "context_aggregator"]
+
+  fix-recommender:
+    build:
+      context: .
+      dockerfile: fix_recommender/Dockerfile
+    depends_on:
+      - kafka
+      - redis
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - REDIS_URL=redis://redis:6379/0
+      - GOOGLE_API_KEY=AIzaSyChiIdeDZsYCVTXfUdpIj-KgbZdN8Cs2Dg
+      - GOOGLE_GENAI_USE_VERTEXAI=FALSE
+      - DEFAULT_MODEL=gemini-2.0-flash
+    restart: unless-stopped
+    command: ["adk", "run", "fix_recommender"]
+
+  root-cause-scorer:
+    build:
+      context: .
+      dockerfile: root_cause_scorer/Dockerfile
+    depends_on:
+      - kafka
+      - redis
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - REDIS_URL=redis://redis:6379/0
+      - GOOGLE_API_KEY=AIzaSyChiIdeDZsYCVTXfUdpIj-KgbZdN8Cs2Dg
+      - GOOGLE_GENAI_USE_VERTEXAI=FALSE
+      - DEFAULT_MODEL=gemini-2.0-flash
+    restart: unless-stopped
+    command: ["adk", "run", "root_cause_scorer"]
+
+  geometry-analyzer:
+    build:
+      context: .
+      dockerfile: geometry_analyzer/Dockerfile
+    depends_on:
+      - redis
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - GOOGLE_API_KEY=AIzaSyChiIdeDZsYCVTXfUdpIj-KgbZdN8Cs2Dg
+      - GOOGLE_GENAI_USE_VERTEXAI=FALSE
+      - DEFAULT_MODEL=gemini-2.0-flash
+    restart: unless-stopped
+    command: ["adk", "run", "geometry_analyzer"]
+
+  feedback-loop:
+    build:
+      context: .
+      dockerfile: feedback_loop/Dockerfile
+    depends_on:
+      - redis
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - GOOGLE_API_KEY=AIzaSyChiIdeDZsYCVTXfUdpIj-KgbZdN8Cs2Dg
+      - GOOGLE_GENAI_USE_VERTEXAI=FALSE
+      - DEFAULT_MODEL=gemini-2.0-flash
+    restart: unless-stopped
+    command: ["adk", "run", "feedback_loop"]
+
+  # Data Ingestion Service
+  ingestion:
+    build:
+      context: .
+      dockerfile: ingestion/Dockerfile
+    depends_on:
+      - kafka
+      - redis
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - REDIS_URL=redis://redis:6379/0
+    volumes:
+      - ./sample_data:/app/sample_data
+    restart: unless-stopped
+
+  # ADK Web UI for Development
+  adk-web:
+    build:
+      context: .
+      dockerfile: Dockerfile.adk-web
+    depends_on:
+      - congestion-detector
+      - context-aggregator
+      - fix-recommender
+      - root-cause-scorer
+      - geometry-analyzer
+      - feedback-loop
+    environment:
+      - GOOGLE_API_KEY=AIzaSyChiIdeDZsYCVTXfUdpIj-KgbZdN8Cs2Dg
+      - GOOGLE_GENAI_USE_VERTEXAI=FALSE
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    command: ["adk", "web", "--host", "0.0.0.0", "--port", "8000"]
+
+volumes:
+  kafka_data:
+  zookeeper_data:
+  zookeeper_logs:
+  redis_data: 

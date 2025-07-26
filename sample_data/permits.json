@@ -1,0 +1,107 @@
+[
+  {
+    "permit_id": "PRM001",
+    "permit_type": "construction",
+    "title": "Highway 101 Bridge Maintenance",
+    "description": "Scheduled maintenance on bridge infrastructure",
+    "latitude": 37.7549,
+    "longitude": -122.4394,
+    "start_date": "2023-12-20",
+    "end_date": "2023-12-27",
+    "affected_segments": ["SEG007", "SEG009"],
+    "lane_restrictions": {
+      "total_lanes": 4,
+      "closed_lanes": 1,
+      "operating_hours": "06:00-18:00"
+    },
+    "contact_info": {
+      "contractor": "Bay Area Construction Inc.",
+      "phone": "+1-415-555-0123"
+    },
+    "impact_level": "medium"
+  },
+  {
+    "permit_id": "PRM002",
+    "permit_type": "special_event",
+    "title": "Annual Marathon Event",
+    "description": "City marathon with partial road closures",
+    "latitude": 37.7849,
+    "longitude": -122.4094,
+    "start_date": "2023-12-21",
+    "end_date": "2023-12-21",
+    "affected_segments": ["SEG002", "SEG004", "SEG006"],
+    "lane_restrictions": {
+      "total_lanes": 6,
+      "closed_lanes": 2,
+      "operating_hours": "06:00-14:00"
+    },
+    "contact_info": {
+      "organizer": "SF Marathon Committee",
+      "phone": "+1-415-555-0456"
+    },
+    "impact_level": "high"
+  },
+  {
+    "permit_id": "PRM003",
+    "permit_type": "utility",
+    "title": "Gas Line Inspection",
+    "description": "Routine gas line inspection and maintenance",
+    "latitude": 37.8149,
+    "longitude": -122.3794,
+    "start_date": "2023-12-20",
+    "end_date": "2023-12-22",
+    "affected_segments": ["SEG005"],
+    "lane_restrictions": {
+      "total_lanes": 4,
+      "closed_lanes": 0,
+      "operating_hours": "09:00-15:00"
+    },
+    "contact_info": {
+      "contractor": "Pacific Gas & Electric",
+      "phone": "+1-415-555-0789"
+    },
+    "impact_level": "low"
+  },
+  {
+    "permit_id": "PRM004",
+    "permit_type": "construction",
+    "title": "Storm Drain Repair",
+    "description": "Emergency storm drain repair due to recent damage",
+    "latitude": 37.7749,
+    "longitude": -122.4194,
+    "start_date": "2023-12-20",
+    "end_date": "2023-12-23",
+    "affected_segments": ["SEG001"],
+    "lane_restrictions": {
+      "total_lanes": 6,
+      "closed_lanes": 1,
+      "operating_hours": "22:00-06:00"
+    },
+    "contact_info": {
+      "contractor": "City Public Works",
+      "phone": "+1-415-555-0101"
+    },
+    "impact_level": "medium"
+  },
+  {
+    "permit_id": "PRM005",
+    "permit_type": "filming",
+    "title": "Commercial Film Production",
+    "description": "Commercial filming requiring temporary road closure",
+    "latitude": 37.7249,
+    "longitude": -122.4694,
+    "start_date": "2023-12-21",
+    "end_date": "2023-12-21",
+    "affected_segments": ["SEG010"],
+    "lane_restrictions": {
+      "total_lanes": 4,
+      "closed_lanes": 2,
+      "operating_hours": "08:00-18:00"
+    },
+    "contact_info": {
+      "organizer": "Bay Area Film Commission",
+      "phone": "+1-415-555-0202"
+    },
+    "impact_level": "medium"
+  }
+] 
